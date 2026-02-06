@@ -1,0 +1,48 @@
+/* sweetalert.css */
+
+/* Popup */
+.swal-popup-elegant {
+  border-radius: 16px !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+  padding: 25px !important;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff !important;
+}
+
+/* Titre */
+.swal-title-elegant {
+  color: #000000 !important;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+/* Texte */
+.swal-text-elegant {
+  color: #000000 !important;
+  font-size: 1rem;
+  margin-top: 12px;
+  line-height: 1.4;
+}
+
+/* Icon */
+.swal-icon-black {
+  color: #000000 !important;
+  font-size: 3rem !important;
+  margin: 0 auto !important;
+}
+
+/* Bouton */
+.swal-button-elegant {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 8px 22px !important;
+  margin-top: 15px !important;
+  transition: all 0.2s ease;
+}
+
+.swal-button-elegant:hover {
+  background-color: #333333 !important;
+}

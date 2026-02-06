@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import Loading from './ui/Loading'
 
 interface FormField {
   name: string
@@ -43,6 +44,7 @@ interface FormField {
 
 interface FormModalProps<T extends Record<string, any>> {
   open: boolean
+  loading: boolean
   onClose: () => void
   title: string
   fields: FormField[]
@@ -63,6 +65,7 @@ const sizeClasses: Record<NonNullable<FormModalProps<any>['size']>, string> = {
 
 export function FormModal<T extends Record<string, any>>({
   open,
+  loading,
   onClose,
   title,
   fields,
@@ -170,7 +173,7 @@ export function FormModal<T extends Record<string, any>>({
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
             </Button>
-            <Button type="submit">{isEdit ? 'Modifier' : 'Ajouter'}</Button>
+            <Button type="submit">{loading ? (<Loading color='white' size={5} />) : isEdit ? 'Modifier' : 'Ajouter'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

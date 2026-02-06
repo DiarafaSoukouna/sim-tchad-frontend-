@@ -5,8 +5,8 @@ import { Navigation } from '@/components/navigation'
 import { PageHeader } from '@/components/page-header'
 import { DataTable } from '@/components/data-table'
 import { FormModal } from '@/components/form-modal'
-import { formFields } from './form'
-import { SecteurType } from './types'
+import { useMagasinFormFields } from './form'
+import { MagasinTypes } from './types'
 
 import {
   getSecteurs,
@@ -17,23 +17,37 @@ import {
 import { get } from 'http'
 import Loading from '@/components/ui/Loading'
 import { showError, showSuccess } from '@/components/ui/sweetAlert'
+import { createMagasin, deleteMagasin, getMagasins, updateMagasin } from '@/functions/magasins'
+import { ActorType } from '../acteurs/types'
 
 export default function SecteursPage() {
-  const [secteurs, setSecteurs] = useState<SecteurType[]>([])
+  const [secteurs, setSecteurs] = useState<MagasinTypes[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [editingItem, setEditingItem] = useState<SecteurType | null>(null)
-  const [formValues, setFormValues] = useState<SecteurType>({} as SecteurType)
+  const [editingItem, setEditingItem] = useState<MagasinTypes | null>(null)
+  const [formValues, setFormValues] = useState<MagasinTypes>({} as MagasinTypes)
+  const { formFields, acteurs } = useMagasinFormFields()
 
   const columns = [
     { key: 'code' as const, label: 'Code' },
     { key: 'name' as const, label: 'Nom' },
+    { key: 'phone' as const, label: 'Télephone' },
+    { key: 'address' as const, label: 'Adresse' },
+    { key: 'actor_id' as const, label: 'Adresse' },
+    {
+      key: 'actor_id' as const,
+      label: 'Acteur',
+      render: (item: MagasinTypes) => {
+        const secteur = acteurs.find((a) => a.id === item.actor_id)
+        return secteur?.actor_sigle || '-'
+      },
+    },
     { key: 'description' as const, label: 'Description' },
   ]
   const handleFetch = async () => {
     try {
       setIsLoading(true);
-      const data = await getSecteurs()
+      const data = await getMagasins()
       setIsLoading(false)
       setSecteurs(data)
     } catch (error) {
@@ -47,30 +61,36 @@ export default function SecteursPage() {
   }, [])
   const handleAdd = () => {
     setEditingItem(null)
-    setFormValues({} as SecteurType)
+    setFormValues({} as MagasinTypes)
     setIsModalOpen(true)
   }
 
-  const handleEdit = (item: SecteurType) => {
+  const handleEdit = (item: MagasinTypes) => {
     setEditingItem(item)
     setFormValues({
       id: item.id,
       name: item.name,
       description: item.description ?? '',
       code: item.code,
+      actor_id: item.actor_id,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      phone: item.phone,
+      whatsapp: item.whatsapp,
+      address: item.address,
     })
     setIsModalOpen(true)
   }
 
-  const handleDelete = async (item: SecteurType) => {
+  const handleDelete = async (item: MagasinTypes) => {
     try {
       setIsLoading(true);
-      await deleteSecteur(item.id)
+      await deleteMagasin(item.id)
       handleFetch()
       setIsLoading(false);
-      showSuccess('Secteur supprimé avec succèss')
+      showSuccess('Magasin supprimé avec succèss')
     } catch (error) {
-      showError("Erreur lors de j'ajout du secteur");
+      showError("Erreur lors de j'ajout du magasin");
       throw new Error('Delete error')
     } finally {
       setIsLoading(false);
@@ -81,19 +101,19 @@ export default function SecteursPage() {
     try {
       setIsLoading(true);
       if (editingItem) {
-        await updateSecteur(formValues!)
+        await updateMagasin(formValues!)
         handleFetch()
       } else {
-        await createSecteur(formValues!)
+        await createMagasin(formValues!)
         handleFetch()
       }
-      showSuccess(editingItem ? 'Secteur mise à jour avec succèss': 'Secteur ajouté avec succèss')
+      showSuccess(editingItem ? 'Magasin mise à jour avec succèss' : 'Magasin ajouté avec succèss')
       setIsModalOpen(false)
-      setFormValues({} as SecteurType)
+      setFormValues({} as MagasinTypes)
     } catch (error) {
-      showError("Erreur lors de j'ajout du secteur");
+      showError("Erreur lors de j'ajout du magasin");
       throw new Error('Submit error')
-    }finally{
+    } finally {
       setIsLoading(false);
     }
   }
@@ -103,10 +123,10 @@ export default function SecteursPage() {
       <Navigation />
       <main className="p-6">
         <PageHeader
-          title="Secteurs"
-          description="Gérez les secteurs d'activité"
+          title="Magasins"
+          description="Gérez les magasins"
           onAdd={handleAdd}
-          addLabel="Ajouter un secteur"
+          addLabel="Ajouter un magasin"
         />
         {isLoading ? (
           <Loading />
@@ -123,7 +143,7 @@ export default function SecteursPage() {
           open={isModalOpen}
           loading={isLoading}
           onClose={() => setIsModalOpen(false)}
-          title="secteur"
+          title="magasin"
           fields={formFields}
           values={formValues}
           onChange={(name, value) =>
