@@ -120,6 +120,17 @@ export default function TypeProduitsPage({
       }
     }
   }
+  const closeN = () => {
+    setEditingType(null)
+    setAdd(false)
+    setTypeFormValues({
+      id: 0,
+      name: '',
+      code: '',
+      attributes: [],
+    })
+    handleFetchTypes()
+  }
   useEffect(() => {
     handleFetchTypes()
   }, [])
@@ -279,14 +290,7 @@ export default function TypeProduitsPage({
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      setEditingType(null)
-                      setAdd(false)
-                      setTypeFormValues({
-                        id: 0,
-                        name: '',
-                        code: '',
-                        attributes: [],
-                      })
+                      closeN()
                     }}
                   >
                     Annuler

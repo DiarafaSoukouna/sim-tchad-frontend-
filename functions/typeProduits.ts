@@ -19,7 +19,16 @@ export async function getTypeProductsAttributes(): Promise<TypeProduitTypes[]> {
     throw error?.response?.data || error
   }
 }
-
+export async function getTypeProduitById(
+  id: number,
+): Promise<TypeProduitTypes> {
+  try {
+    const { data } = await axiosInstance.get(`/api/product_type/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export async function createTypeProduit(
   payload: TypeProduitTypes,
 ): Promise<TypeProduitTypes> {

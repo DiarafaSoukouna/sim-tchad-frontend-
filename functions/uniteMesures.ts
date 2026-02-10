@@ -9,7 +9,16 @@ export async function getUniteMesures(): Promise<UniteMesureTypes[]> {
     throw error?.response?.data || error
   }
 }
-
+export async function getUniteMesureById(
+  id: number,
+): Promise<UniteMesureTypes> {
+  try {
+    const { data } = await axiosInstance.get(`/api/unite_of_measure/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export async function createUniteMesure(
   payload: UniteMesureTypes,
 ): Promise<UniteMesureTypes> {

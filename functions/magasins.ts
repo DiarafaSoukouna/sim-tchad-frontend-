@@ -9,7 +9,14 @@ export async function getMagasins(): Promise<MagasinTypes[]> {
     throw error?.response?.data || error
   }
 }
-
+export async function getMagasinById(id: number): Promise<MagasinTypes> {
+  try {
+    const { data } = await axiosInstance.get(`/api/store/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export async function createMagasin(
   payload: MagasinTypes,
 ): Promise<MagasinTypes> {

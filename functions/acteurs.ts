@@ -22,6 +22,14 @@ export async function createActeur(formData: FormData): Promise<ActorType> {
     throw error?.response?.data || error
   }
 }
+export async function getActeurById(id: number): Promise<ActorType> {
+  try {
+    const { data } = await axiosInstance.get(`/api/actor/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 
 export async function updateActeur(
   id: number,

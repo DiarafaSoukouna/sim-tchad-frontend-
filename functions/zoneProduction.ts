@@ -9,9 +9,18 @@ export async function getZoneProductions(): Promise<ZoneProductionTypes[]> {
     throw error?.response?.data || error
   }
 }
-
+export async function getZoneProductionById(
+  id: number,
+): Promise<ZoneProductionTypes> {
+  try {
+    const { data } = await axiosInstance.get(`/api/production_area/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export async function createZoneProduction(
-  payload: ZoneProductionTypes
+  payload: ZoneProductionTypes,
 ): Promise<ZoneProductionTypes> {
   try {
     const { id, ...rest } = payload
@@ -23,7 +32,7 @@ export async function createZoneProduction(
 }
 
 export async function updateZoneProduction(
-  payload: ZoneProductionTypes
+  payload: ZoneProductionTypes,
 ): Promise<ZoneProductionTypes> {
   try {
     const { id, ...rest } = payload

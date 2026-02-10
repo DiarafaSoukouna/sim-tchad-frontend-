@@ -17,7 +17,16 @@ export const getSpeculations = async (): Promise<SpeculationType[]> => {
     throw new Error('Erreur inconnue')
   }
 }
-
+export async function getSpeculationsById(
+  id: number,
+): Promise<SpeculationType> {
+  try {
+    const { data } = await axiosInstance.get(`/api/speculation/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export const createSpeculation = async (
   formData: FormData,
 ): Promise<SpeculationType> => {

@@ -24,3 +24,14 @@ export interface ProduitType {
   attributes?: ProduitAttribute[]
   photo?: string
 }
+
+export interface DetailFieldProps {
+  icon: React.ReactNode
+  label: string
+  value: React.ReactNode
+}
+export interface NamesProduct {
+  language_id: number
+  language_name?: string
+  name: string
+}

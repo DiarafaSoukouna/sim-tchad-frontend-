@@ -1,5 +1,5 @@
 import { axiosInstance } from './axiosInstance'
-import { ProduitType } from '@/app/produits/types'
+import { NamesProduct, ProduitType } from '@/app/produits/types'
 
 export async function getProduits(): Promise<ProduitType[]> {
   try {
@@ -22,7 +22,46 @@ export async function createProduit(formData: FormData): Promise<ProduitType> {
     throw error?.response?.data || error
   }
 }
-
+export async function getProduitById(id: number): Promise<ProduitType> {
+  try {
+    const { data } = await axiosInstance.get(`/api/products_by_type/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
+export async function getNamesProduct(id: number): Promise<NamesProduct[]> {
+  try {
+    const { data } = await axiosInstance.get(`/api/product/namesProducts/${id}`)
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
+export async function addNameProduct(id: number, payload: any): Promise<any> {
+  try {
+    const { data } = await axiosInstance.post(
+      `/api/product/addLanguagesToProduct/${id}`,
+      payload,
+    )
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
+export async function deleteNameProduct(
+  id: number,
+  language_id: number,
+): Promise<any> {
+  try {
+    const { data } = await axiosInstance.post(
+      `/api/product/deleteLanguageFromProduct/${id}/${language_id}`,
+    )
+    return data.data
+  } catch (error: any) {
+    throw error?.response?.data || error
+  }
+}
 export async function updateProduit(
   id: number,
   formData: FormData,

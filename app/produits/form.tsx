@@ -14,7 +14,10 @@ import { getActeurs } from '@/functions/acteurs'
 import { getMagasins } from '@/functions/magasins'
 import { ProduitAttribute } from './types'
 
-export function useCategoryFormFields(selectedTypeId?: number) {
+export function useCategoryFormFields(
+  selectedTypeId?: number,
+  resetKey?: number,
+) {
   const [typesProduitsAttributs, settypesProduitsAttributs] = useState<
     TypeProduitTypes[]
   >([])
@@ -24,15 +27,20 @@ export function useCategoryFormFields(selectedTypeId?: number) {
   const [speculations, setSpeculations] = useState<SpeculationType[]>([])
   const [acteurs, setActeurs] = useState<ActorType[]>([])
   const [magasins, setMagasins] = useState<MagasinTypes[]>([])
+  const [isLoadingAttributes, setIsLoadingAttributes] = useState(true)
 
   useEffect(() => {
     async function fetchtypesProduitsAttributs() {
-      const data = await getTypeProductsAttributes()
-      settypesProduitsAttributs(data)
+      setIsLoadingAttributes(true)
+      try {
+        const data = await getTypeProductsAttributes()
+        settypesProduitsAttributs(data)
+      } finally {
+        setIsLoadingAttributes(false)
+      }
     }
     fetchtypesProduitsAttributs()
   }, [])
-
   useEffect(() => {
     getUniteMesures().then(setUniteMeasure)
     getZoneProductions().then(setZones)
@@ -42,19 +50,16 @@ export function useCategoryFormFields(selectedTypeId?: number) {
   }, [])
 
   useEffect(() => {
-    if (!selectedTypeId) {
-      setDynamicAttributes([])
-      return
-    }
+    // 🔴 reset forcé à chaque ouverture / fermeture / action voulue
+    setDynamicAttributes([])
+
+    if (!selectedTypeId) return
 
     const selectedType = typesProduitsAttributs.find(
       (t) => t.id === selectedTypeId,
     )
 
-    if (!selectedType || !selectedType.attributes) {
-      setDynamicAttributes([])
-      return
-    }
+    if (!selectedType?.attributes?.length) return
 
     const attrs: FormField[] = selectedType.attributes.map((attr) => ({
       name: attr.name,
@@ -64,7 +69,7 @@ export function useCategoryFormFields(selectedTypeId?: number) {
     }))
 
     setDynamicAttributes(attrs)
-  }, [selectedTypeId, typesProduitsAttributs])
+  }, [selectedTypeId, typesProduitsAttributs, resetKey])
 
   const formFields: FormField[] = [
     {
@@ -80,11 +85,7 @@ export function useCategoryFormFields(selectedTypeId?: number) {
       type: 'text',
       required: true,
     },
-    {
-      name: 'description',
-      label: 'Description',
-      type: 'textarea',
-    },
+
     {
       name: 'product_type_id',
       label: 'Type de produit',
@@ -184,9 +185,20 @@ export function useCategoryFormFields(selectedTypeId?: number) {
       type: 'file',
       required: false,
     },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'textarea',
+      fullWidth: true,
+    },
 
     ...dynamicAttributes,
   ]
 
-  return { formFields, typesProduitsAttributs, dynamicAttributes }
+  return {
+    formFields,
+    typesProduitsAttributs,
+    dynamicAttributes,
+    isLoadingAttributes,
+  }
 }
