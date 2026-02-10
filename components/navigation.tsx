@@ -11,6 +11,7 @@ import {
   BarChart3,
   ChevronDown,
   LogOut,
+  HomeIcon,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -152,6 +153,18 @@ export function Navigation() {
           >
             <Package className="h-4 w-4" />
             Produits
+          </Link>
+          <Link
+            href="/magasins"
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors',
+              pathname === '/magasins'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+            )}
+          >
+            <HomeIcon className="h-4 w-4" />
+            Magasins
           </Link>
         </nav>
 
