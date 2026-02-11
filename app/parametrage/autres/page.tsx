@@ -32,6 +32,8 @@ import {
   updateLangue,
   deleteLangue,
 } from '@/functions/langues'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 type ModalType = 'unite' | 'currency' | 'langue' | null
 
@@ -39,7 +41,7 @@ export default function AutresParametragePage() {
   const [unites, setUnites] = useState<UniteMesureTypes[]>([])
   const [currencies, setCurrencies] = useState<DeviseTypes[]>([])
   const [langues, setLangues] = useState<LangueTypes[]>([])
-
+  const [isLoading, setIsLoading] = useState(false)
   const [modalType, setModalType] = useState<ModalType>(null)
   const [editingItem, setEditingItem] = useState<
     UniteMesureTypes | DeviseTypes | LangueTypes | null
@@ -85,88 +87,139 @@ export default function AutresParametragePage() {
   }
 
   const handleSubmit = async () => {
-    if (modalType === 'unite') {
-      if (editingItem) {
-        await updateUniteMesure(formValues as UniteMesureTypes)
-        handleFetchUnites()
-      } else {
-        await createUniteMesure(formValues as UniteMesureTypes)
-        handleFetchUnites()
+    try {
+      setIsLoading(true)
+      if (modalType === 'unite') {
+        if (editingItem) {
+          await updateUniteMesure(formValues as UniteMesureTypes)
+          handleFetchUnites()
+        } else {
+          await createUniteMesure(formValues as UniteMesureTypes)
+          handleFetchUnites()
+        }
+        showSuccess(editingItem ?
+          'Unité mesure mise à jour avec succèss' :
+          'Unité mesure ajouté avec succèss')
+      } else if (modalType === 'currency') {
+        if (editingItem) {
+          await updateDevise(formValues as DeviseTypes)
+          handleFetchDevises()
+        } else {
+          await createDevise(formValues as DeviseTypes)
+          handleFetchDevises()
+        }
+
+        showSuccess(editingItem ? 'Devise mise à jour avec succèss' : 'Devise ajoutée avec succèss')
+      } else if (modalType === 'langue') {
+        if (editingItem) {
+          await updateLangue(formValues as LangueTypes)
+          handleFetchLangues()
+        } else {
+          await createLangue(formValues as LangueTypes)
+          handleFetchLangues()
+        }
+        showSuccess(editingItem ? 'Langue mise à jour avec succèss' : 'Langue ajoutée avec succèss')
       }
-    } else if (modalType === 'currency') {
-      if (editingItem) {
-        await updateDevise(formValues as DeviseTypes)
-        handleFetchDevises()
-      } else {
-        await createDevise(formValues as DeviseTypes)
-        handleFetchDevises()
-      }
-    } else if (modalType === 'langue') {
-      if (editingItem) {
-        await updateLangue(formValues as LangueTypes)
-        handleFetchLangues()
-      } else {
-        await createLangue(formValues as LangueTypes)
-        handleFetchLangues()
-      }
+      closeModal()
+      setIsLoading(false)
+    } catch (error) {
+      showError(
+        modalType === 'unite' ? "Erreur lors de la mise à jour de l'unité de mesure" :
+          modalType === 'currency' ? 'Erreur lors de la mise à jour de la dévise' :
+            modalType === 'langue' ? 'Erreur lors de la mise à jour de la langue' :
+              'Erreur lors de la mise à jour'
+      )
+      console.error(error)
+    } finally {
+      setIsLoading(false)
     }
-    closeModal()
+
   }
 
   const handleDeleteUnite = async (item: UniteMesureTypes) => {
     try {
+      setIsLoading(true)
       await deleteUniteMesure(item.id)
       handleFetchUnites()
+      setIsLoading(false)
+      showSuccess('Unité de mesure supprimé avec succèss')
     } catch (error) {
+      showError("Erreur lors de la suppression de l'unité de mesure")
       console.error('Error deleting unite:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleDeleteCurrency = async (item: DeviseTypes) => {
     try {
+      setIsLoading(true)
       await deleteDevise(item.id)
       handleFetchDevises()
+      setIsLoading(false)
+      showSuccess('Dévise supprimée avec succèss')
     } catch (error) {
+      showError('Erreur lors de la suppression de la dévise')
       console.error('Error deleting currency:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleDeleteLangue = async (item: LangueTypes) => {
     try {
+      setIsLoading(true)
       await deleteLangue(item.id)
       handleFetchLangues()
+      setIsLoading(false)
+      showSuccess('Langue supprimé avec succèss')
     } catch (error) {
+      showError('Erreur lors de la suppression de la langue')
       console.error('Error deleting langue:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleFetchUnites = async () => {
     try {
+      setIsLoading(true)
       const res = await getUniteMesures()
       if (res) {
         setUnites(res)
       }
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching unites:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleFetchDevises = async () => {
     try {
+      setIsLoading(true)
       const res = await getDevises()
       if (res) {
         setCurrencies(res)
       }
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching devises:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleFetchLangues = async () => {
     try {
+      setIsLoading(true)
       const res = await getLangues()
       if (res) {
         setLangues(res)
       }
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching langues:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -201,13 +254,18 @@ export default function AutresParametragePage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={unites}
-                columns={uniteColumns}
-                onEdit={(item) => openModal('unite', item)}
-                onDelete={handleDeleteUnite}
-                compact
-              />
+              {
+                isLoading ? (
+                  <Loading />
+                ) :
+                  <DataTable
+                    data={unites}
+                    columns={uniteColumns}
+                    onEdit={(item) => openModal('unite', item)}
+                    onDelete={handleDeleteUnite}
+                    compact
+                  />
+              }
             </CardContent>
           </Card>
 
@@ -224,13 +282,18 @@ export default function AutresParametragePage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={currencies}
-                columns={currencyColumns}
-                onEdit={(item) => openModal('currency', item)}
-                onDelete={handleDeleteCurrency}
-                compact
-              />
+              {
+                isLoading ? (
+                  <Loading />
+                ) :
+                  <DataTable
+                    data={currencies}
+                    columns={currencyColumns}
+                    onEdit={(item) => openModal('currency', item)}
+                    onDelete={handleDeleteCurrency}
+                    compact
+                  />
+              }
             </CardContent>
           </Card>
 
@@ -247,18 +310,25 @@ export default function AutresParametragePage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <DataTable
-                data={langues}
-                columns={langueColumns}
-                onEdit={(item) => openModal('langue', item)}
-                onDelete={handleDeleteLangue}
-                compact
-              />
+              {
+                isLoading ? (
+                  <Loading />
+                ) :
+                  <DataTable
+                    data={langues}
+                    columns={langueColumns}
+                    onEdit={(item) => openModal('langue', item)}
+                    onDelete={handleDeleteLangue}
+                    compact
+                  />
+              }
+
             </CardContent>
           </Card>
         </div>
 
         <FormModal
+          loading={isLoading}
           open={modalType === 'unite'}
           onClose={closeModal}
           title="unité de mesure"
@@ -272,6 +342,7 @@ export default function AutresParametragePage() {
         />
 
         <FormModal
+          loading={isLoading}
           open={modalType === 'currency'}
           onClose={closeModal}
           title="devise"
@@ -285,6 +356,7 @@ export default function AutresParametragePage() {
         />
 
         <FormModal
+          loading={isLoading}
           open={modalType === 'langue'}
           onClose={closeModal}
           title="langue"

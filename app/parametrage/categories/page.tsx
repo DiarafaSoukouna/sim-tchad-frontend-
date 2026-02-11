@@ -20,10 +20,13 @@ import {
   initialSecteurs,
   generateId,
 } from '@/lib/store'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryType[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [editingItem, setEditingItem] = useState<CategoryType | null>(null)
   const [formValues, setFormValues] = useState<CategoryType>({} as CategoryType)
   const { formFields, secteurs } = useCategoryFormFields()
@@ -63,25 +66,36 @@ export default function CategoriesPage() {
 
   const handleDelete = async (item: CategoryType) => {
     try {
+      setIsLoading(true)
       await deleteCategory(item.id)
       handleFetch()
+      setIsLoading(false)
+      showSuccess('Catégorie supprimée avec succès')
     } catch (error) {
+      showError('Erreur lors de la suppression de la catégorie')
       console.error('Error deleting category:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleFetch = async () => {
     try {
+      setIsLoading(true)
       const data = await getCategories()
       if (data) {
         setCategories(data)
       }
+      setIsLoading(true)
     } catch (error) {
       throw new Error('Fetch error')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true)
       if (editingItem) {
         await updateCategory(formValues!)
         handleFetch()
@@ -90,8 +104,13 @@ export default function CategoriesPage() {
         handleFetch()
       }
       setIsModalOpen(false)
+      setIsLoading(false)
       setFormValues({} as CategoryType)
+      showSuccess(
+        editingItem ? 'Catégorie mise à jour avec succès' :
+          'Catégorie ajoutée avec succès')
     } catch (error) {
+      showError('Erreur lors de la mise à jour de la catégorie')
       console.error('Error submitting category:', error)
     }
   }
@@ -110,14 +129,18 @@ export default function CategoriesPage() {
           onAdd={handleAdd}
           addLabel="Ajouter une catégorie"
         />
-        <DataTable
-          data={categories}
-          columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {isLoading ? (
+          <Loading />
+        ) :
+          <DataTable
+            data={categories}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />}
         <FormModal
           open={isModalOpen}
+          loading={isLoading}
           onClose={() => setIsModalOpen(false)}
           title="catégorie"
           fields={formFields}

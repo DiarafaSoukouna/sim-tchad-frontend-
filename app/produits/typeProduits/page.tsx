@@ -27,6 +27,7 @@ import {
   deleteTypeProduit,
 } from '@/functions/typeProduits'
 import { createTypeActeur, updateTypeActeur } from '@/functions/typeActeurs'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 interface TypeActeursPageProps {
   open: boolean
@@ -40,6 +41,7 @@ export default function TypeProduitsPage({
 }: TypeActeursPageProps) {
   const [typesProduits, setTypesProduits] = useState<TypeProduitTypes[]>([])
   const [editingType, setEditingType] = useState<TypeProduitTypes | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [add, setAdd] = useState(false)
   const [typeFormValues, setTypeFormValues] = useState<{
     id: number
@@ -72,14 +74,19 @@ export default function TypeProduitsPage({
   }
   const handleFetchTypes = async () => {
     try {
+      setIsLoading(true)
       const data = await getTypesProduits()
       setTypesProduits(data)
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching types:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleSubmitType = async () => {
     try {
+      setIsLoading(true)
       const payload = {
         id: typeFormValues.id,
         name: typeFormValues.name,
@@ -100,8 +107,11 @@ export default function TypeProduitsPage({
       setTypeFormValues({ id: 0, name: '', code: '', attributes: [] })
 
       if (onAddType) onAddType()
+      setIsLoading(false)
     } catch (error) {
       console.error('Error submitting type:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleDeleteType = (type: TypeProduitTypes) => {
@@ -111,11 +121,16 @@ export default function TypeProduitsPage({
   const confirmDeleteType = async () => {
     if (typeToDelete) {
       try {
+        setIsLoading(true)
         await deleteTypeProduit(typeToDelete.id)
         setTypesProduits(typesProduits.filter((t) => t.id !== typeToDelete.id))
+        setIsLoading(false)
+        showSuccess('Type du produit supprimé avec succès')
       } catch (error) {
+        showError('Erreur lors de la suppression du type de produit')
         console.error('Error deleting type:', error)
       } finally {
+        setIsLoading(false)
         setTypeToDelete(null)
       }
     }

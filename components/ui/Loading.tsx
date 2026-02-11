@@ -1,5 +1,7 @@
 import { FC } from "react";
-import { GridLoader } from "react-spinners";
+import {
+  GridLoader, BeatLoader
+} from "react-spinners";
 
 interface LoadingProps {
   /** Loader en plein écran ou contenu */
@@ -23,7 +25,8 @@ const Loading: FC<LoadingProps> = ({
         width: "100%",
       }}
     >
-      <GridLoader size={size} color={color}/>
+      <BeatLoader
+        size={size} color={color} />
     </div>
   );
 };

@@ -15,10 +15,13 @@ import {
 } from '@/functions/speculations'
 import { getCategories } from '@/functions/categories'
 import { CategoryType } from '../categories/types'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 export default function SpeculationsPage() {
   const [speculations, setSpeculations] = useState<SpeculationType[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [editingItem, setEditingItem] = useState<SpeculationType | null>(null)
   const [formValues, setFormValues] = useState<SpeculationType>(
     {} as SpeculationType,
@@ -75,17 +78,27 @@ export default function SpeculationsPage() {
 
   const handleDelete = async (item: SpeculationType) => {
     try {
+      setIsLoading(true)
       await deleteSpeculation(item.id)
       handleFetch()
+      setIsLoading(false)
+      showSuccess('Spéculation supprimée avec succès')
     } catch (error) {
+      showError('Erreur lors de la suppresion de la spéculation')
       console.error('Error deleting speculation:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleFetch = async () => {
     try {
+      setIsLoading(true)
       await getSpeculations().then((data) => setSpeculations(data))
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching speculations:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -113,7 +126,11 @@ export default function SpeculationsPage() {
       setIsModalOpen(false)
       setFormValues({} as SpeculationType)
       setEditingItem(null)
+      showSuccess(
+        editingItem ? 'Spéculation mise à jour avec succès' :
+          'Spéculation ajoutée avec succès')
     } catch (error) {
+      showError("Erreur lors de l'ajout de la spéculation")
       console.error('Error submitting speculation:', error)
     }
   }
@@ -128,13 +145,18 @@ export default function SpeculationsPage() {
           onAdd={handleAdd}
           addLabel="Ajouter une spéculation"
         />
-        <DataTable
-          data={speculations}
-          columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        {
+          isLoading ? (
+            <Loading />) :
+            <DataTable
+              data={speculations}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+        }
         <FormModal
+          loading={isLoading}
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title="spéculation"

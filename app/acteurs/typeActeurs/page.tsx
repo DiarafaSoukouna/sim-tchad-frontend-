@@ -26,6 +26,7 @@ import {
   updateTypeActeur,
   deleteTypeActeur,
 } from '@/functions/typeActeurs'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 interface TypeActeursPageProps {
   open: boolean
@@ -40,6 +41,7 @@ export default function TypeActeursPage({
 }: TypeActeursPageProps) {
   const [typesActeurs, setTypesActeurs] = useState<TypeActeurTypes[]>([])
   const [editingType, setEditingType] = useState<TypeActeurTypes | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [add, setAdd] = useState(false)
   const [typeFormValues, setTypeFormValues] = useState<
     { id: number; name: string; code: string }[]
@@ -60,14 +62,19 @@ export default function TypeActeursPage({
   }
   const handleFetchTypes = async () => {
     try {
+      setIsLoading(true)
       const data = await getTypesActeurs()
       setTypesActeurs(data)
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching types:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleSubmitType = async () => {
     try {
+      setIsLoading(true)
       if (editingType) {
         await updateTypeActeur(typeFormValues[0])
         handleFetchTypes()
@@ -84,8 +91,16 @@ export default function TypeActeursPage({
 
       // Notify parent to refresh types if callback provided
       if (onAddType) onAddType()
+      setIsLoading(false)
+      showSuccess(editingType ?
+        'Type acteur mise à jour avec succèss' :
+        'Type acteur ajouté avec succès'
+      )
     } catch (error) {
+      showError("Erreur lors de l'ajout du type acteur")
       console.error('Error submitting type:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleDeleteType = (type: TypeActeurTypes) => {
@@ -95,12 +110,18 @@ export default function TypeActeursPage({
   const confirmDeleteType = async () => {
     if (typeToDelete) {
       try {
+        setIsLoading(true)
         await deleteTypeActeur(typeToDelete.id)
         setTypesActeurs(typesActeurs.filter((t) => t.id !== typeToDelete.id))
+        setIsLoading(false)
+
+        showSuccess('Type acteur supprimé avec succèss')
       } catch (error) {
+        showError("Erreur lors de la suppression du type acteur")
         console.error('Error deleting type:', error)
       } finally {
         setTypeToDelete(null)
+        setIsLoading(false)
       }
     }
   }

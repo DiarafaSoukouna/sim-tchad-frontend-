@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Trash2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Loading from '@/components/ui/Loading'
 
 interface Props {
   id: number
@@ -263,9 +264,7 @@ export function NameOfTypeProduitAttribute({ id, open, onClose }: Props) {
             {/* Liste des noms existants */}
             <div className="space-y-2">
               {loading ? (
-                <p className="text-center text-sm text-muted-foreground">
-                  Chargement...
-                </p>
+                <Loading />
               ) : productNames.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground py-8">
                   Aucun nom dans une autre langue

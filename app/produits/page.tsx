@@ -25,6 +25,8 @@ import {
 import { useRouter } from 'next/navigation'
 import { NameOfTypeProduitAttribute } from './names'
 import { set } from 'date-fns'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 export default function ProduitsPage() {
   const [produits, setProduits] = useState<ProduitType[]>([])
@@ -34,6 +36,7 @@ export default function ProduitsPage() {
   const [editingType, setEditingType] = useState<TypeProduitTypes | null>(null)
   const [formValues, setFormValues] = useState<ProduitType>({} as ProduitType)
   const [typesProduits, setTypesProduits] = useState<TypeProduitTypes[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [isNameModalOpen, setIsNameModalOpen] = useState(false)
   const [resetKey, setResetKey] = useState(0)
   const router = useRouter()
@@ -156,6 +159,7 @@ export default function ProduitsPage() {
   }
   const handleSubmit = async () => {
     try {
+      setIsLoading(true)
       const formData = new FormData()
       const attributesArray: any[] = []
 
@@ -243,20 +247,31 @@ export default function ProduitsPage() {
       setIsModalOpen(false)
       setFormValues({} as ProduitType)
       setResetKey((k) => k + 1) // ← Réinitialiser ici aussi
+      setIsLoading(false)
+      showSuccess(
+        editingItem ? 'Produit mise à jour avec succès'
+          : 'Produit ajoutée avec succès')
     } catch (error) {
+      showError('Erreur lors de la suppression du produit')
       console.error('Error submitting product:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleFetchProduits = async () => {
     try {
+      setIsLoading(true)
       const data = await getProduits()
       if (data) {
         setProduits(data)
       }
       console.log('Fetched produits:', data)
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching acteurs:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -266,7 +281,7 @@ export default function ProduitsPage() {
   }
 
   useEffect(() => {
-    ;(handleFetchProduits(), fetchTypesProduits())
+    ; (handleFetchProduits(), fetchTypesProduits())
   }, [])
 
   return (
@@ -296,40 +311,49 @@ export default function ProduitsPage() {
             </Button>
           </div>
         </div>
-        {typesProduits.length > 0 && (
-          <Tabs defaultValue={`type-${typesProduits[0].id}`}>
-            <TabsList className="mb-4">
-              {typesProduits.map((type) => (
-                <TabsTrigger
-                  key={type.id}
-                  value={`type-${type.id}`}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  <div className="flex items-center gap-2">
-                    <Folder className="h-4 w-4" />
-                    {type.name}
-                  </div>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+        {
 
-            <div className="mt-4">
-              {typesProduits.map((type) => (
-                <TabsContent key={type.id} value={`type-${type.id}`}>
-                  <DataTable
-                    data={produits.filter((p) => p.product_type_id === type.id)}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onView={handleView}
-                  />
-                </TabsContent>
-              ))}
-            </div>
-          </Tabs>
-        )}
+          isLoading ? (
+            <Loading />
+          ) :
+            typesProduits.length > 0 && (
+              <Tabs defaultValue={`type-${typesProduits[0].id}`}>
+                <TabsList className="mb-4">
+                  {typesProduits.map((type) => (
+                    <TabsTrigger
+                      key={type.id}
+                      value={`type-${type.id}`}
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Folder className="h-4 w-4" />
+                        {type.name}
+                      </div>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <div className="mt-4">
+                  {typesProduits.map((type) => (
+                    <TabsContent key={type.id} value={`type-${type.id}`}>
+
+                      <DataTable
+                        data={produits.filter((p) => p.product_type_id === type.id)}
+                        columns={columns}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onView={handleView}
+                      />
+
+
+                    </TabsContent>
+                  ))}
+                </div>
+              </Tabs>
+            )}
 
         <FormModal
+          loading={isLoading}
           size="full"
           open={isModalOpen}
           onClose={() => {

@@ -11,12 +11,16 @@ import {
   getZoneProductions,
   createZoneProduction,
   updateZoneProduction,
+  deleteZoneProduction,
 } from '@/functions/zoneProduction'
 import { ZoneProductionTypes } from './types'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 
 export default function ZonesPage() {
   const [zones, setZones] = useState<ZoneProductionTypes[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [editingItem, setEditingItem] = useState<ZoneProductionTypes | null>(
     null
   )
@@ -66,28 +70,54 @@ export default function ZonesPage() {
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true)
       if (editingItem) {
         await updateZoneProduction(formValues)
         handleFetch()
+        setIsLoading(false)
       } else {
         const newZone = await createZoneProduction(formValues)
         handleFetch()
       }
+
+      showSuccess(editingItem ?
+        'Zone mise à jour avec succès' :
+        'Zone ajoutée avec succès'
+      )
     } catch (error) {
+      showError('Erreur lors de la suppression de la zone')
       console.error('Erreur lors de la soumission:', error)
     } finally {
       setIsModalOpen(false)
       setFormValues({} as ZoneProductionTypes)
       setEditingItem(null)
+      setIsLoading(false)
     }
   }
-
+  const handleDelete = async (item: ZoneProductionTypes) => {
+    try {
+      setIsLoading(true)
+      await deleteZoneProduction(item.id)
+      handleFetch()
+      setIsLoading(false)
+      showSuccess('Zone supprimée avec succès')
+    } catch (error) {
+      showError('Erreur lors de la suppresion de la zone')
+      console.error('Error deleting speculation:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   const handleFetch = async () => {
     try {
+      setIsLoading(true)
       const data = await getZoneProductions()
       if (data) setZones(data)
+      setIsLoading(false)
     } catch (error) {
       console.error('Failed to fetch zones:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -105,13 +135,19 @@ export default function ZonesPage() {
           onAdd={handleAdd}
           addLabel="Ajouter une zone"
         />
-        <DataTable
-          data={zones}
-          columns={columns}
-          onEdit={handleEdit}
-          onDelete={handleEdit}
-        />
+        {
+          isLoading ? (
+            <Loading />
+          ) :
+            <DataTable
+              data={zones}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+        }
         <FormModal
+          loading={isLoading}
           size="xl"
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}

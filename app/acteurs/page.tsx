@@ -23,12 +23,15 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TypeActeurTypes } from './typeActeurs/types'
 import { set } from 'date-fns'
+import Loading from '@/components/ui/Loading'
+import { showError, showSuccess } from '@/components/ui/sweetAlert'
 export default function ActeursPage() {
   const [acteurs, setActeurs] = useState<ActorType[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isTypesModalOpen, setIsTypesModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ActorType | null>(null)
   const [editingType, setEditingType] = useState<ActorType | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [formValues, setFormValues] = useState<ActorType>({} as ActorType)
   const [typesActeurs, setTypesActeurs] = useState<TypeActeurTypes[]>([])
   const { formFields } = useCategoryFormFields()
@@ -90,8 +93,8 @@ export default function ActeursPage() {
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true)
       const formData = new FormData()
-
       Object.entries(formValues).forEach(([key, value]) => {
         if (value instanceof File) {
           formData.append(key, value)
@@ -111,26 +114,44 @@ export default function ActeursPage() {
       await handleFetchActeurs()
       setIsModalOpen(false)
       setFormValues({} as ActorType)
+      showSuccess(editingItem ? 'Acteur mise à jour avec succèss' : 'Acteur ajouté avec succèss')
+      setIsLoading(true)
     } catch (error) {
+      showError("Erreur lors de l'ajout de l'acteur")
       console.error('Error submitting form:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   const handleFetchActeurs = async () => {
     try {
+
+      setIsLoading(true)
       const data = await getActeurs()
       if (data) {
         setActeurs(data)
       }
+      setIsLoading(false)
     } catch (error) {
       console.error('Error fetching acteurs:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
   async function fetchTypesActeurs() {
-    const data = await getTypesActeurs()
-    setTypesActeurs(data)
+    try {
+      setIsLoading(true)
+      const data = await getTypesActeurs()
+      setTypesActeurs(data)
+      setIsLoading(false)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsLoading(false)
+    }
   }
   useEffect(() => {
-    ;(handleFetchActeurs(), fetchTypesActeurs())
+    ; (handleFetchActeurs(), fetchTypesActeurs())
   }, [])
   return (
     <div className="min-h-screen bg-background">
@@ -159,38 +180,44 @@ export default function ActeursPage() {
             </Button>
           </div>
         </div>
-        {typesActeurs.length > 0 && (
-          <Tabs defaultValue={`type-${typesActeurs[0].id}`}>
-            <TabsList className="mb-4">
-              {typesActeurs.map((type) => (
-                <TabsTrigger
-                  key={type.id}
-                  value={`type-${type.id}`}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  <div className="flex items-center gap-2">
-                    <Folder className="h-4 w-4" />
-                    {type.name}
-                  </div>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+        {isLoading ? (
+          <Loading />
+        ) :
+          typesActeurs.length > 0 && (
+            <Tabs defaultValue={`type-${typesActeurs[0].id}`}>
+              <TabsList className="mb-4">
+                {typesActeurs.map((type) => (
+                  <TabsTrigger
+                    key={type.id}
+                    value={`type-${type.id}`}
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Folder className="h-4 w-4" />
+                      {type.name}
+                    </div>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <div className="mt-4">
-              {typesActeurs.map((type) => (
-                <TabsContent key={type.id} value={`type-${type.id}`}>
-                  <DataTable
-                    data={acteurs.filter((a) => a.actor_type_id === type.id)}
-                    columns={columns}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                </TabsContent>
-              ))}
-            </div>
-          </Tabs>
-        )}
+              <div className="mt-4">
+                {typesActeurs.map((type) => (
+                  <TabsContent key={type.id} value={`type-${type.id}`}>
+
+                    <DataTable
+                      data={acteurs.filter((a) => a.actor_type_id === type.id)}
+                      columns={columns}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                    />
+                  </TabsContent>
+                ))}
+              </div>
+            </Tabs>
+          )
+        }
         <FormModal
+          loading={isLoading}
           size="full"
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}

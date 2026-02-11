@@ -111,7 +111,7 @@ export default function SecteursPage() {
       setIsModalOpen(false)
       setFormValues({} as MagasinTypes)
     } catch (error) {
-      showError("Erreur lors de j'ajout du magasin");
+      showError("Erreur lors de l'ajout du magasin");
       throw new Error('Submit error')
     } finally {
       setIsLoading(false);
