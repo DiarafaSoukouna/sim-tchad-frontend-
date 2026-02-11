@@ -33,7 +33,6 @@ export default function SecteursPage() {
     { key: 'name' as const, label: 'Nom' },
     { key: 'phone' as const, label: 'Télephone' },
     { key: 'address' as const, label: 'Adresse' },
-    { key: 'actor_id' as const, label: 'Adresse' },
     {
       key: 'actor_id' as const,
       label: 'Acteur',
