@@ -351,7 +351,7 @@ export default function ProduitsPage() {
                 </div>
               </Tabs>
             )}
-
+ 
         <FormModal
           loading={isLoading}
           size="full"
