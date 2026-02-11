@@ -83,7 +83,7 @@ export function FormModal<T extends Record<string, any>>({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className={`backdrop-blur-sm ${sizeClasses[size]} h-[90vh] flex flex-col overflow-hidden`}
+        className={`backdrop-blur-sm ${sizeClasses[size]}  flex flex-col overflow-hidden`}
       >
         <DialogHeader>
           <DialogTitle>
@@ -173,7 +173,15 @@ export function FormModal<T extends Record<string, any>>({
             <Button type="button" variant="outline" onClick={onClose}>
               Annuler
             </Button>
-            <Button type="submit">{loading ? (<Loading color='white' size={5} />) : isEdit ? 'Modifier' : 'Ajouter'}</Button>
+            <Button type="submit">
+              {loading ? (
+                <Loading color="white" size={5} />
+              ) : isEdit ? (
+                'Modifier'
+              ) : (
+                'Ajouter'
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
